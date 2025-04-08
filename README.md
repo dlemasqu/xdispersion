@@ -33,7 +33,7 @@ python setup.py install
 ### 3.1 Problems of representing the data
 For Lagrangian data represented in multi-dimensional `xarray.DataArray`, one of the major problems is that the lengths of Lagrangian trajectories are not the same (see **real drifter data** in the figure).  So it is impossible to use a `traj` dimension to represent different trajectories.
 
-The second problem is how to represent the dataset of particle pairs.  For example, if there are 4 particles P1, P2, P3, and P4, through combination one would get 6 pairs (see **pair data** in the figure).  Pair data are still of difference lengths.  More importantly, each trajectory is duplicated three times so that the overall storage would be greatly increased.
+The second problem is how to represent the dataset of particle pairs.  For example, if there are 4 particles P1, P2, P3, and P4, through combination one would get 6 pairs (see **pair data** in the figure).  Pair data are still of different lengths.  More importantly, each trajectory is duplicated three times so that the overall storage would be greatly increased.
 
 ![Data Structure](./pics/DataStructure.png)
 
@@ -57,7 +57,7 @@ Also, one can perform statistics (like histogram of r0) using pair information `
 
 ### 3.3 Calculations of dispersion measures
 
-To calculate dispersion measures, like relative dispersion $r^2(t)=\left<|\mathbf{x_i}-\mathbf{x_j}|^2\right>$, one need to load the full data into memory.  This means that we need to specify a maximum time of analysis (`maxtlen`): pairs will be truncated if they are longer than `maxtlen`, and will be padded with nans if they are shorter than `maxtlen`.  This is shown schematically below.  Notice that the time is not the actual date/time, so we call it relative time `rtime`.
+To calculate dispersion measures, like relative dispersion $r^2(t)=<|\mathbf{x_i}-\mathbf{x_j}|^2>$, one need to load the full data into memory.  This means that we need to specify a maximum time of analysis (`maxtlen`): pairs will be truncated if they are longer than `maxtlen`, and will be padded with nans if they are shorter than `maxtlen`.  This is shown schematically below.  Notice that the time is not the actual date/time, so we call it relative time `rtime`.
 
 ![calculations](./pics/calculations.png)
 
@@ -91,5 +91,5 @@ which is clean and clear, as it follows almost to its mathematical expression.
 ---
 ## 3. Examples
 
-Notebooks are given [here](https://github.com/miniufo/xdispersion/docs/source/notebooks/) demonstrating how to use the package.
+Notebooks are given [here](https://github.com/miniufo/xdispersion/tree/main/docs/source/notebooks/) demonstrating how to use the package.
 
