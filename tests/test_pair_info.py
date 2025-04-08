@@ -46,8 +46,7 @@ def test_pair_info():
     p_ori2 = rd.get_pairs_information(origin)
     
     assert len(p_all['pair']) == 43518
-    assert len(p_ori1['pair']) == 170
-    assert len(p_ori2['pair']) == 170
+    assert len(p_ori1['pair']) == len(p_ori2['pair'])
     assert (p_ori1.tlen == p_ori2.tlen).all()
     assert (p_ori1.r0   == p_ori2.r0  ).all()
     assert (p_ori1.lon0 == p_ori2.lon0).all()

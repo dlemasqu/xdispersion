@@ -1,0 +1,6 @@
+numba
+xarray
+dask
+nbsphinx
+numpydoc
+sphinx-rtd-theme

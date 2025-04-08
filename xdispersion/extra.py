@@ -129,41 +129,6 @@ class RelativeDispersion(ParticleStatistics):
 
 
 
-
 """
 codes below are still under test
 """
-def cal_relative_dispersion(pinfo, trajs, Rearth=6371.2, dtype=np.float32):
-    times = np.linspace(0, 90, 4*24*90+1)
-
-    npair, ntime = len(pinfo['idx']), len(times)
-
-    rd = np.zeros([npair, ntime], dtype=dtype) * np.nan
-    
-    idxI = pinfo.idxI.astype(np.int32).values
-    idxJ = pinfo.idxJ.astype(np.int32).values
-
-    lons = trajs['longitude'].values
-    lats = trajs['latitude' ].values
-
-    for i in range(npair):
-        sI = slice(idxI[i][0], idxI[i][1])
-        sJ = slice(idxJ[i][0], idxJ[i][1])
-        
-        lon1 = np.deg2rad(lons[sI])
-        lat1 = np.deg2rad(lats[sI])
-    
-        lon2 = np.deg2rad(lons[sJ])
-        lat2 = np.deg2rad(lats[sJ])
-
-        r = _geodist(lon1, lon2, lat1, lat2) * Rearth
-        #print(f'{pinfo.gID.values[i]}, {lons[sI][0]:.3f}, {lats[sI][0]:.3f}')
-        
-        end = min(len(r), ntime)
-        rd[i, :end] = r[:end]
-
-    rd = xr.DataArray(rd, name='rd', dims=['pair', 'time'],
-                      coords={'pair':pinfo['idx'].values, 'time':times})
-
-    return rd
-

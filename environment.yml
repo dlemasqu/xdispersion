@@ -1,0 +1,13 @@
+name: xdispersion
+channels:
+  - conda-forge
+dependencies:
+  - python
+  - pytest
+  - numpy
+  - xarray
+  - dask
+  - scipy
+  - tqdm
+  - xhistogram
+  - mpmath
