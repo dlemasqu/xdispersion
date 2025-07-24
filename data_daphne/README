@@ -1,0 +1,35 @@
+#DAPHNE
+# --------------
+# DATA
+# --------------
+The velocity fields in this folder are from experiments.
+Formated data is on Tornado/pcloud: /local_raid/dgsl1/3_Daphne_StAndrews/TransportLagrangien/FSLE/Dispersion_papier
+The experiments are labeled in Table 4.1 of he PhD manuscript:
+- Experiment A = 201118_Hetero30b
+- Experiment B = 201118_Hetero18b
+- Experiment N = 191030_regimeII
+- Experiment O = 191030_regimeI
+
+The velocity fields grid size is 100*100.
+The time step between each velocity field is dt=0.05 second
+Each .dat file contains 1000 time steps (corresponding to 50 seconds, i.e. 62.5 rotation periods)
+There are 6 .dat files for Experiment A because in total 6000 iterations have been recorded.
+
+Velocity, position and time have dimensions of m/s, m and s.
+Radius: R=0.49 m
+Rotation rate: Omega = 7.8540 s^{-1}
+Coriolis parameter: f=2*Omega=2*7.8540 s^{-1}
+
+A rotation time is T=2*pi/Omega = 0.8 second
+
+# --------------
+# RUN PROGRAM
+# --------------
+
+In a terminal:
+gfortran streamt.f90   #will produce the executable a.out
+./a.out  #will execute a.out
+
+The trajectories are written in fort.1001 (2 columns, X and Y, for every particle, repeated nt times)
+
+
