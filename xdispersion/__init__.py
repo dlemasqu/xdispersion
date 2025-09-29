@@ -14,6 +14,6 @@ from .measures import rel_disp, vel_struct_func, rel_diff,\
                       rotational_divergent_components
 from .plot import panel
 from .template import cal_all_measures
-from .utils import geodist, gen_rbins
+from .utils import geodist, gen_rbins, semilog_fit, exp_decay_offset_fit
 
 __version__ = "0.0.1"

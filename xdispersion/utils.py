@@ -9,6 +9,7 @@ import numpy as np
 import xarray as xr
 from typing import Union, Optional, List, Dict, Tuple, Callable
 from xhistogram.xarray import histogram
+from scipy.optimize import curve_fit
 
 
 """
@@ -159,6 +160,65 @@ def gen_rbins(
         rbins = xr.DataArray(rbins, dims='rbin', coords={'rbin':rbins})
     
     return rbins.rename('rbins')
+
+
+def exp_decay_offset_fit(
+    t: np.array, y: np.array
+) -> Tuple[float, float, float, float, float]:
+    """Fit y = A * exp(-(t - t0) / tau) + C of a timeseries y=f(t)
+    
+    Parameters
+    ----------
+    t: numpy.ndarray
+        Relative time axis.
+    y: numpy.ndarray
+        Values at each time.
+    
+    Returns
+    -------
+    A: numpy.ndarray
+        Amplitude of the exponential fit.
+    tau: numpy.ndarray
+        e-folding time of the fit.
+    t0: numpy.ndarray
+        Time delay of the fit.
+    C: numpy.darray
+        Offset of the fit.
+    rmse: numpy.ndarray
+        Root mean squared error of the fit.
+    """
+    idx = ~np.isnan(y)
+    t_fit = t[idx]
+    y_fit = y[idx]
+
+    if len(y_fit) < 4:
+        return np.nan, np.nan, np.nan, np.nan, np.nan
+
+    try:
+        def model(t, A, tau, t0, C):
+            t_shifted = t - t0
+            return np.where(t_shifted >= 0, A * np.exp(-t_shifted / tau) + C, A + C)
+
+        # Initial guesses: [A, tau, t0, C]
+        A0 = y_fit.max() - y_fit.min()
+        tau0 = (t_fit.max() - t_fit.min()) / 10
+        t0_0 = t_fit.min()
+        C0 = y_fit.min()
+
+        # Bounds: A free, tau>0, t0>=0, C free
+        lower_bounds = [-np.inf, 1e-12, 0, -np.inf]
+        upper_bounds = [ np.inf,  np.inf, np.inf,  np.inf]
+        
+        popt, _ = curve_fit(model, t_fit, y_fit, p0=[A0, tau0, t0_0, C0],bounds=(lower_bounds, upper_bounds), maxfev=10000)
+        A, tau, t0, C = popt
+
+        y_pred = model(t_fit, A, tau, t0, C)
+        rmse = np.sqrt(np.mean((y_pred - y_fit) ** 2))
+        return A, tau, t0, C, rmse
+
+    except:
+        return np.nan, np.nan, np.nan, np.nan, np.nan
+    
 
 
 def semilog_fit(

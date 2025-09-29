@@ -28,7 +28,7 @@ class RelativeDispersion(object):
         uvel: str,
         vvel: str,
         time: str,
-        coord: Literal['cartesian', 'latlon'],
+        coord: Literal['cartesian', 'latlon','polar'],
         ID: str,
         maxtlen: Optional[int] = -1 ,
         Rearth: Optional[float] = 6371.2,
@@ -52,7 +52,7 @@ class RelativeDispersion(object):
         time: str
             Name of time dimension
         coord: str
-            Type of coordinates in ['cartesian' 'latlon'].
+            Type of coordinates in ['cartesian' 'latlon' 'polar'].
         ID: str
             Dimension name for particle IDs.
         maxtlen: int
@@ -91,8 +91,8 @@ class RelativeDispersion(object):
         if not ragged and maxtlen < 0:
             maxtlen = len(times)
         
-        if coord not in ['cartesian', 'latlon']:
-            raise Exception(f'invalid coord {coord}, should be [cartesian, latlon]')
+        if coord not in ['cartesian', 'latlon', 'polar']:
+            raise Exception(f'invalid coord {coord}, should be [cartesian, latlon, polar]')
     
     
     """"""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -154,9 +154,9 @@ class RelativeDispersion(object):
                                     coords={'pair':np.arange(no_pair*(no_pair-1)/2, dtype='int32'),
                                             'particle':np.array([0,1], dtype='int32')})
             
-            xpos0 = dset[self.xpos].isel({'time':0, 'ID':pair_idx}).drop_vars(['time','ID']).rename('xpos0')
-            ypos0 = dset[self.ypos].isel({'time':0, 'ID':pair_idx}).drop_vars(['time','ID']).rename('ypos0')
-            pID   = dset[self.ID].isel({'ID':pair_idx}).drop_vars('ID').rename('pID')
+            xpos0 = dset[self.xpos].isel({'time':0, self.ID:pair_idx}).drop_vars(['time',self.ID]).rename('xpos0')
+            ypos0 = dset[self.ypos].isel({'time':0, self.ID:pair_idx}).drop_vars(['time',self.ID]).rename('ypos0')
+            pID   = dset[self.ID].isel({self.ID:pair_idx}).drop_vars(self.ID).rename('pID')
             tlen  = (xpos0 - xpos0).isel(particle=0).rename('tlen') + len(dset.time)
             stime = (dset.time.isel({'time':0}, drop=True) + (xpos0 - xpos0).isel({'particle':0})).rename('stime')
             r0    = np.hypot(xpos0.isel(particle=0) - xpos0.isel(particle=1),
@@ -328,7 +328,7 @@ class RelativeDispersion(object):
                                         'rtime':np.arange(maxtlen)*self.dt})
         else:
             return self.ds_traj[vname].sel({self.ID:pairs.pID})\
-                   .drop_vars('ID').rename({'time':'rtime'})
+                   .drop_vars(self.ID).rename({'time':'rtime'})
     
 
     """"""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -379,6 +379,15 @@ class RelativeDispersion(object):
             rxp = ((xi-xi.isel(rtime=0)) - (xj-xj.isel(rtime=0))) * np.cos((yi + yj)/2.0)
             ryp = ((yi-yi.isel(rtime=0)) - (yj-yj.isel(rtime=0)))
             rpb = np.hypot(rxp, ryp) * self.Rearth
+        elif self.coord == 'polar':
+            r   = np.hypot(xi-xj,yi-yj)
+            rx  = np.abs(np.sqrt(xi**2+yi**2)-np.sqrt(xj**2+yj**2)) #radial separation
+            ry = np.arccos((xi*xj+yi*yj)/(np.sqrt(xi**2+yi**2)*np.sqrt(xj**2+yj**2)))*np.sqrt(xi**2+yi**2)
+            #ry  = np.abs(np.arctan2(yi,xi)-np.arctan2(yj,xj))*np.sqrt(xi**2+yi**2)
+            #ry  = np.sqrt(r**2-rx**2) #wrong-temporary (zonal dispersion)
+            rxy = rx*ry #wrong-temporary
+            rpb = np.hypot((xi-xi.isel(rtime=0)) - (xj-xj.isel(rtime=0)),
+                           (yi-yi.isel(rtime=0)) - (yj-yj.isel(rtime=0)))
         else:
             rx = xi - xj
             ry = yi - yj
@@ -450,8 +459,7 @@ class RelativeDispersion(object):
             r  = geodist(xi, xj, yi, yj) * self.Rearth
             
             dul = (rx * du + ry * dv) / r # longitudinal velocity
-            dut = (rx * dv - ry * du) / r # transversal  velocity
-            
+            dut = (rx * dv - ry * du) / r # transversal  velocity   
         else:
             rx = xi - xj
             ry = yi - yj
